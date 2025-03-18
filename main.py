@@ -1,5 +1,6 @@
 from flask import Flask, render_template, jsonify, request
 import time
+import os
 
 app = Flask(__name__)
 
@@ -120,4 +121,6 @@ def get_state():
     return jsonify(game_state)
 
 if __name__ == '__main__':
-    app.run(debug=True) 
+    # Only enable debug mode in development
+    debug = os.environ.get('FLASK_ENV') == 'development'
+    app.run(debug=debug) 
