@@ -17,6 +17,20 @@ game_state = {
     'global_last_tick': None
 }
 
+
+def advance_clock(current_time):
+    if (not game_state['game_started'] or game_state['is_paused']
+            or game_state['global_time'] <= 0):
+        return
+
+    elapsed = min(max(0, current_time - game_state['last_tick']), game_state['global_time'])
+    active_player = game_state['active_player']
+    game_state[f'player{active_player}_time'] += elapsed
+    game_state['global_time'] -= elapsed
+    game_state['last_tick'] = current_time
+    game_state['global_last_tick'] = current_time
+
+
 @app.route('/')
 def index():
     return render_template('index.html')
@@ -38,6 +52,9 @@ def set_global_time():
 
 @app.route('/start')
 def start_game():
+    if game_state['global_time'] <= 0:
+        return jsonify(game_state)
+
     game_state['game_started'] = True
     game_state['active_player'] = 1
     current_time = time.time()
@@ -50,19 +67,14 @@ def start_game():
 
 @app.route('/switch/<int:player>')
 def switch_player(player):
+    if player not in (1, 2):
+        return jsonify({'error': 'Player must be 1 or 2'}), 400
     if not game_state['game_started'] or game_state['is_paused']:
         return jsonify({'error': 'Game not started or paused'}), 400
-    
-    current_time = time.time()
-    if game_state['last_tick'] is not None:
-        elapsed = current_time - game_state['last_tick']
-        if game_state['active_player'] == 1:
-            game_state['player1_time'] += elapsed
-        else:
-            game_state['player2_time'] += elapsed
-    
-    game_state['active_player'] = player
-    game_state['last_tick'] = current_time
+
+    advance_clock(time.time())
+    if game_state['global_time'] > 0:
+        game_state['active_player'] = player
     return jsonify(game_state)
 
 @app.route('/pause')
@@ -71,19 +83,14 @@ def pause_game():
         return jsonify({'error': 'Game not started'}), 400
 
     current_time = time.time()
-    if not game_state['is_paused'] and game_state['last_tick'] is not None:
-        elapsed = current_time - game_state['last_tick']
-        if game_state['active_player'] == 1:
-            game_state['player1_time'] += elapsed
-        else:
-            game_state['player2_time'] += elapsed
-        
-        global_elapsed = current_time - game_state['global_last_tick']
-        game_state['global_time'] -= global_elapsed
-        game_state['global_last_tick'] = None
-    
+    advance_clock(current_time)
+    if game_state['global_time'] <= 0:
+        return jsonify(game_state)
+
     game_state['is_paused'] = not game_state['is_paused']
-    if not game_state['is_paused']:
+    if game_state['is_paused']:
+        game_state['global_last_tick'] = None
+    else:
         game_state['last_tick'] = current_time
         game_state['global_last_tick'] = current_time
     
@@ -103,21 +110,7 @@ def reset_game():
 
 @app.route('/state')
 def get_state():
-    if game_state['game_started'] and not game_state['is_paused']:
-        current_time = time.time()
-        if game_state['last_tick'] is not None:
-            elapsed = current_time - game_state['last_tick']
-            if game_state['active_player'] == 1:
-                game_state['player1_time'] += elapsed
-            elif game_state['active_player'] == 2:
-                game_state['player2_time'] += elapsed
-            game_state['last_tick'] = current_time
-        
-        if game_state['global_last_tick'] is not None:
-            global_elapsed = current_time - game_state['global_last_tick']
-            game_state['global_time'] -= global_elapsed
-            game_state['global_last_tick'] = current_time
-    
+    advance_clock(time.time())
     return jsonify(game_state)
 
 if __name__ == '__main__':
