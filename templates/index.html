@@ -217,6 +217,7 @@
             }
 
             const pauseButton = document.getElementById('pause');
+            pauseButton.disabled = !gameState.game_started || gameState.global_time <= 0;
             if (gameState.is_paused) {
                 pauseButton.textContent = 'Resume';
                 pauseButton.classList.add('paused');
@@ -282,7 +283,6 @@
             updateDisplay();
             stateInterval = setInterval(fetchState, 100);
             document.getElementById('start').disabled = true;
-            document.getElementById('pause').disabled = false;
         });
 
         document.getElementById('pause').addEventListener('click', async () => {
@@ -301,7 +301,7 @@
         });
 
         document.getElementById('player1').addEventListener('click', async () => {
-            if (gameState.game_started && !gameState.is_paused && gameState.active_player !== 1) {
+            if (gameState.game_started && !gameState.is_paused && gameState.global_time > 0 && gameState.active_player !== 1) {
                 const response = await fetch('/switch/1');
                 gameState = await response.json();
                 updateDisplay();
@@ -309,7 +309,7 @@
         });
 
         document.getElementById('player2').addEventListener('click', async () => {
-            if (gameState.game_started && !gameState.is_paused && gameState.active_player !== 2) {
+            if (gameState.game_started && !gameState.is_paused && gameState.global_time > 0 && gameState.active_player !== 2) {
                 const response = await fetch('/switch/2');
                 gameState = await response.json();
                 updateDisplay();
