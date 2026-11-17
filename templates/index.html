@@ -281,13 +281,23 @@
             }
         });
 
-        document.getElementById('start').addEventListener('click', async () => {
-            const response = await fetch('/start');
-            gameState = await response.json();
-            updateDisplay();
+        function followGame() {
+            clearInterval(stateInterval);
             stateInterval = setInterval(fetchState, 100);
             document.getElementById('start').disabled = true;
-            document.getElementById('pause').disabled = false;
+        }
+
+        document.getElementById('start').addEventListener('click', async () => {
+            const response = await fetch('/start');
+            if (!response.ok) {
+                // A game is already running on the server: show it instead.
+                await fetchState();
+                followGame();
+                return;
+            }
+            gameState = await response.json();
+            updateDisplay();
+            followGame();
         });
 
         document.getElementById('pause').addEventListener('click', async () => {
@@ -321,8 +331,12 @@
             }
         });
 
-        // Initialize pause button as disabled
+        // The game lives on the server. After a reload, show it and keep
+        // following it rather than offering to start a second one.
         document.getElementById('pause').disabled = true;
+        fetchState().then(() => {
+            if (gameState.game_started) followGame();
+        });
     </script>
 </body>
 </html> 
