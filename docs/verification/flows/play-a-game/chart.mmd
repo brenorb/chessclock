@@ -1,0 +1,36 @@
+---
+title: "Play a timed game"
+---
+stateDiagram-v2
+  state "Legend" as legend {
+    lg0: done
+    lg1: idle
+    lg2: playing
+  }
+  class lg0 orange
+  class lg1 tan
+  class lg2 blue
+  s0: Set the game time
+  s1: Player 1's clock running
+  s2: Paused
+  s3: Player 2's clock running
+  s4: Time's up
+  [*] --> s0
+  s0 --> s1: you press start
+  s1 --> s0: you reset
+  s1 --> s2: you pause
+  s1 --> s3: the player taps their clock
+  s1 --> s4: the game time runs out
+  s2 --> s0: you reset
+  s2 --> s1: you resume
+  s3 --> s0: you reset
+  s3 --> s1: the player taps their clock
+  s3 --> s2: you pause
+  s4 --> s0: you reset
+  s3 --> s4: the game time runs out
+  s2 --> s3: you resume
+  class s0 tan
+  class s1 blue
+  class s2 blue
+  class s3 blue
+  class s4 orange
