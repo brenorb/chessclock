@@ -4,7 +4,7 @@
 | --- | --- | --- |
 | [verify-chessclock](../../.claude/skills/verify-chessclock/SKILL.md) | Player clocks add up to the game time used, the game ends at zero, and the clock is always on a real player | TLA+ / TLC, 31 states, plus `tests/test_clock.py` |
 
-The model found three server bugs, now fixed, and the flow model below exposed a fourth in the page:
+The model found three server bugs, and reading the page alongside it found a fourth. All four are fixed:
 
 1. `/switch/3` charged time to nobody (dc3d161).
 2. `/start` during a game cleared the players but kept the global time used (07857be).
