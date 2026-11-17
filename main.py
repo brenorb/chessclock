@@ -52,6 +52,8 @@ def start_game():
 def switch_player(player):
     if not game_state['game_started'] or game_state['is_paused']:
         return jsonify({'error': 'Game not started or paused'}), 400
+    if player not in (1, 2):
+        return jsonify({'error': 'Player must be 1 or 2'}), 400
     
     current_time = time.time()
     if game_state['last_tick'] is not None:
