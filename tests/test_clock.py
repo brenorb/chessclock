@@ -41,3 +41,16 @@ def test_start_refuses_to_restart_a_running_game(clock):
     assert client.get("/start").status_code == 400
     assert totals(client.get("/state").get_json()) == pytest.approx(60)
 
+
+def test_the_clock_stops_at_zero(clock):
+    client, advance = clock
+    client.get("/start")
+    advance(45)
+    client.get("/switch/2")
+    advance(30)
+    state = client.get("/state").get_json()
+    assert state["global_time"] == 0
+    assert state["finished"] is True
+    assert state["player1_time"] == pytest.approx(45)
+    assert state["player2_time"] == pytest.approx(15)
+    assert client.get("/switch/1").status_code == 400

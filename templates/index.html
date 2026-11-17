@@ -216,7 +216,12 @@
                 }
             }
 
+            if (gameState.finished) {
+                document.getElementById('globalTimer').textContent = "Global Time: 0:00 — time's up";
+            }
+
             const pauseButton = document.getElementById('pause');
+            pauseButton.disabled = !gameState.game_started || Boolean(gameState.finished);
             if (gameState.is_paused) {
                 pauseButton.textContent = 'Resume';
                 pauseButton.classList.add('paused');
