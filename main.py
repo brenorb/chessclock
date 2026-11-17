@@ -38,6 +38,9 @@ def set_global_time():
 
 @app.route('/start')
 def start_game():
+    # Restarting mid-game cleared the players but kept the global time used.
+    if game_state['game_started']:
+        return jsonify({'error': 'Game already running; reset it first'}), 400
     game_state['game_started'] = True
     game_state['active_player'] = 1
     current_time = time.time()

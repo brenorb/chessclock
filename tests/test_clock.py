@@ -32,3 +32,12 @@ def test_switch_rejects_a_player_that_does_not_exist(clock):
     assert state["active_player"] == 1
     assert totals(state) == pytest.approx(60)
 
+
+def test_start_refuses_to_restart_a_running_game(clock):
+    client, advance = clock
+    client.get("/start")
+    advance(20)
+    client.get("/state")
+    assert client.get("/start").status_code == 400
+    assert totals(client.get("/state").get_json()) == pytest.approx(60)
+
